@@ -3,8 +3,8 @@ import sqlite3
 import random
 import requests
 from typing import Optional
-st.title("Fast2SMSverification")
-st.title("fast2smsverify.text")
+with open ("C:\Users\sohan\Jupyter files\self done\fast2sms_verify.txt","r")as file:
+    content=file.read()
 
 DB_PATH = "pharmacy.db"
 FAST2SMS_API_KEY = "J9HaHvcYVevlAVhOthXnaiXoxT3DcH3ZDCbvgZPhtarJqZZv9KfqmIBSmxB8"   # Replace with your Fast2SMS API ke
