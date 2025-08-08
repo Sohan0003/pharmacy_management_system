@@ -1,3 +1,6 @@
+
+<meta name="fast2sms" content="RhgkWIq4AjDu01ii1FOgQ005TpdE6qZv">
+
 import streamlit as st
 import sqlite3
 import random
