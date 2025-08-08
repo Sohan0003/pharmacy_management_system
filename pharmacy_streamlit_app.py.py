@@ -7,6 +7,9 @@ from typing import Optional
 DB_PATH = "pharmacy.db"
 FAST2SMS_API_KEY = "J9HaHvcYVevlAVhOthXnaiXoxT3DcH3ZDCbvgZPhtarJqZZv9KfqmIBSmxB8"   # Replace with your Fast2SMS API ke
 
+with open("fast2sms_verify.txt","r") as file:
+    verification_content =file.read()
+
 def send_otp_sms(mobile_number, otp):
     url = "https://www.fast2sms.com/dev/bulk"
     payload = {
