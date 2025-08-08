@@ -5,17 +5,11 @@ import requests
 from typing import Optional
 
 DB_PATH = "pharmacy.db"
-FAST2SMS_API_KEY = "J9HaHvcYVevlAVhOthXnaiXoxT3DcH3ZDCbvgZPhtarJqZZv9KfqmIBSmxB8"   # Replace with your Fast2SMS API ke
-
-def send_otp_sms(mobile_number, otp):
-    url = "https://www.fast2sms.com/dev/bulkimport streamlit as st
-import sqlite3
-import random
-import requests
-from typing import Optional
-
-DB_PATH = "pharmacy.db"
 FAST2SMS_API_KEY = "J9HaHvcYVevlAVhOthXnaiXoxT3DcH3ZDCbvgZPhtarJqZZv9KfqmIBSmxB8"   # Replace with your Fast2SMS API key
+
+import os
+FAST2SMS_API_KEY = os.getenv("RhgkWIq4AjDu01ii1FOgQ005TpdE6qZv")
+export FAST2SMS_API_KEY="RhgkWIq4AjDu01ii1FOgQ005TpdE6qZv"
 
 def send_otp_sms(mobile_number, otp):
     url = "https://www.fast2sms.com/dev/bulkV2"
