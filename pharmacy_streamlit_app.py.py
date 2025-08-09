@@ -2,161 +2,16 @@ import streamlit as st
 import sqlite3
 import random
 import requests
-import os
 from typing import Optional
 
 DB_PATH = "pharmacy.db"
-VERIFY_FILE_PATH = os.path.join(os.path.dirname(__file__), "fast2sms_verify.txt")
 
-# Read API key from verification file
-if os.path.exists(VERIFY_FILE_PATH):
-    with open(VERIFY_FILE_PATH, "r") as f:
-        FAST2SMS_API_KEY = f.read().strip()
-else:
-    FAST2SMS_API_KEY = "YOUR_DEFAULT_API_KEY"  # Fallback key if file missing
+def send_otp_local(mobile_number, otp):
+    # Display OTP on screen and console instead of sending via Fast2SMS
+    st.success(f"Your OTP is: {otp}")
+    print(f"Generated OTP for {mobile_number}: {otp}")
+    return {"return": True}
 
-def serve_verification_file():
-    if os.path.exists(VERIFY_FILE_PATH):
-        with open(VERIFY_FILE_PATH, "r") as f:
-            st.markdown(f"<pre>{f.read()}</pre>", unsafe_allow_html=True)
-    else:
-        st.error("Verification file not found.")
-
-def send_otp_sms(mobile_number, otp):
-    url = "https://www.fast2sms.com/dev/bulk"
-    payload = {
-        'sender_id': 'TXTIND',
-        'message': f'Your Pharmacy App OTP is {otp}',
-        'language': 'english',
-        'route': 'v3',
-        'numbers': mobile_number
-    }
-    headers = {
-        'authorization': FAST2SMS_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    try:
-        response = requests.post(url, data=payload, headers=headers)
-        if not response.text:
-            return {"error": "Empty response from SMS API"}
-        try:
-            return response.json()
-        except ValueError:
-            return {"error": "Invalid JSON response from SMS API"}
-    except Exception as e:
-        return {"error": str(e)}
-
-# ---- Rest of your original functions here (init_db, init_session, login, signup, etc.) ----
-# For brevity, not repeating unchanged code. Paste them below this function.
-
-# --------------------
-# Main
-# --------------------
-
-def main():
-    st.set_page_config(page_title="Pharmacy Management", layout="wide")
-
-    # Serve verification file if requested
-    if st.query_params.get("file") == "fast2sms_verify.txt":
-        serve_verification_file()
-        return
-
-    init_db()
-    init_session()
-
-    if not st.session_state.logged_in:
-        login_page()
-    else:
-        page = st.session_state.page
-        if page == "dashboard":
-            dashboard_page()
-        elif page == "view_inventory":
-            view_inventory_ui()
-            if st.button("⬅️ Back to Dashboard"):
-                st.session_state.page = "dashboard"
-                st.rerun()
-        elif page == "add_medicine":
-            add_medicine_ui()
-            if st.button("⬅️ Back to Dashboard"):
-                st.session_state.page = "dashboard"
-                st.rerun()
-        elif page == "update_stock":
-            update_stock_ui()
-            if st.button("⬅️ Back to Dashboard"):
-                st.session_state.page = "dashboard"
-                st.rerun()
-        elif page == "billing":
-            billing_ui()
-            if st.button("⬅️ Back to Dashboard"):
-                st.session_state.page = "dashboard"
-                st.rerun()
-        elif page == "delete_medicine":
-            delete_medicine_ui()
-            if st.button("⬅️ Back to Dashboard"):
-                st.session_state.page = "dashboard"
-                st.rerun()
-        elif page == "logout":
-            logout_confirmation()
-
-if __name__ == "__main__":
-    main()
-
-
-
-#####77777777777777777777777777777777777777777777777777777
-
-
-import streamlit as st
-import sqlite3
-import random
-import requests
-from typing import Optional
-
-DB_PATH = "pharmacy.db"
-FAST2SMS_API_KEY = "J9HaHvcYVevlAVhOthXnaiXoxT3DcH3ZDCbvgZPhtarJqZZv9KfqmIBSmxB8"   # Replace with your Fast2SMS API ke
-
-import os
-
-# Path to your verification file
-VERIFY_FILE_PATH = os.path.join(os.path.dirname(__file__), "fast2sms_verify.txt")
-
-# Serve the verification file content at a specific page
-def serve_verification_file():
-    if os.path.exists(VERIFY_FILE_PATH):
-        with open(VERIFY_FILE_PATH, "r") as f:
-            st.markdown(f"<pre>{f.read()}</pre>", unsafe_allow_html=True)
-    else:
-        st.error("Verification file not found.")
-
-
-def send_otp_sms(mobile_number, otp):
-    url = "https://www.fast2sms.com/dev/bulk"
-    payload = {
-        'sender_id': 'TXTIND',
-        'message': f'Your Pharmacy App OTP is {otp}',
-        'language': 'english',
-        'route': 'v3',
-        'numbers': mobile_number
-    }
-    headers = {
-        'authorization': FAST2SMS_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    try:
-        response = requests.post(url, data=payload, headers=headers)
-        print("Response status code:", response.status_code)
-        print("Response text:", response.text)  # Debug output
-
-        if not response.text:
-            return {"error": "Empty response from SMS API"}
-
-        try:
-            return response.json()
-        except ValueError:
-            return {"error": "Invalid JSON response from SMS API"}
-
-    except Exception as e:
-        return {"error": str(e)}
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
