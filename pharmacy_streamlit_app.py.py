@@ -28,11 +28,14 @@ def init_db():
                     pincode TEXT
                 )''')
     c.execute('''CREATE TABLE IF NOT EXISTS medicines (
-                    id TEXT PRIMARY KEY,
+                    id TEXT,
+                    username TEXT,
                     name TEXT NOT NULL,
                     quantity INTEGER NOT NULL,
                     price REAL NOT NULL,
-                    expiry_date TEXT NOT NULL
+                    expiry_date TEXT NOT NULL,
+                    PRIMARY KEY (id, username),
+                    FOREIGN KEY (username) REFERENCES users(username)
                 )''')
     try:
         c.execute("INSERT OR IGNORE INTO users (username, password, role, mobile, first_name, middle_name, last_name, shop_name, city, state, pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -174,7 +177,7 @@ def add_medicine_ui():
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         try:
-            c.execute("INSERT INTO medicines (id, name, quantity, expiry_date, price) VALUES (?, ?, ?, ?, ?)",(med_id, name, int(qty), expiry.strftime("%Y-%m-%d"), float(price)))
+            c.execute("INSERT INTO medicines (id, username, name, quantity, expiry_date, price) VALUES (?, ?, ?, ?, ?, ?)",(med_id, st.session_state.username, name, int(qty), expiry.strftime(\"%Y-%m-%d\"), float(price)))
             conn.commit()
             st.success("Medicine added!")
         except sqlite3.IntegrityError:
@@ -186,7 +189,8 @@ def view_inventory_ui():
     st.header("📦 Inventory")
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT id, name, quantity, expiry_date, price FROM medicines")
+    c.execute("SELECT id, name, quantity, expiry_date, price FROM medicines WHERE username = ?")
+    c.execute_params = (st.session_state.username,)
     rows = c.fetchall()
     conn.close()
     if rows:
@@ -212,7 +216,7 @@ def update_stock_ui():
 
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
-        c.execute("SELECT name, quantity, expiry_date FROM medicines WHERE id = ?", (med_id,))
+        c.execute("SELECT name, quantity, expiry_date FROM medicines WHERE id = ? AND username = ?", (med_id, st.session_state.username))
         row = c.fetchone()
         if not row:
             st.error("Medicine not found.")
@@ -248,7 +252,7 @@ def delete_medicine_ui():
             return
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
-        c.execute("DELETE FROM medicines WHERE id = ?", (med_id,))
+        c.execute("DELETE FROM medicines WHERE id = ? AND username = ?", (med_id, st.session_state.username))
         if c.rowcount > 0:
             st.success("Medicine deleted.")
         else:
@@ -267,7 +271,7 @@ def billing_ui():
         med_id = st.text_input(f"Medicine ID {i+1}", key=f"med_id_{i}")
         qty = st.number_input(f"Quantity {i+1}", min_value=1, step=1, value=1, key=f"qty_{i}")
         if med_id:
-            c.execute("SELECT name, quantity, price, expiry_date FROM medicines WHERE id = ?", (med_id,))
+            c.execute("SELECT name, quantity, price, expiry_date FROM medicines WHERE id = ? AND username = ?", (med_id, st.session_state.username))
             result = c.fetchone()
             if result:
                 name, stock, price, expiry = result
@@ -291,7 +295,7 @@ def billing_ui():
             total_amount = 0
             for item in cart:
                 total_amount += item["total"]
-                c.execute("UPDATE medicines SET quantity = quantity - ? WHERE id = ?", (item["qty"], item["id"]))
+                c.execute("UPDATE medicines SET quantity = quantity - ? WHERE id = ? AND username = ?", (item["qty"], item["id"], st.session_state.username))
             conn.commit()
             st.success(f"💰 Total Bill: ₹{total_amount:.2f}")
             import pandas as pd
