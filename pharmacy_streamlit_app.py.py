@@ -7,6 +7,20 @@ from typing import Optional
 DB_PATH = "pharmacy.db"
 FAST2SMS_API_KEY = "J9HaHvcYVevlAVhOthXnaiXoxT3DcH3ZDCbvgZPhtarJqZZv9KfqmIBSmxB8"   # Replace with your Fast2SMS API ke
 
+import os
+
+# Path to your verification file
+VERIFY_FILE_PATH = os.path.join(os.path.dirname(__file__), "fast2sms_verify.txt")
+
+# Serve the verification file content at a specific page
+def serve_verification_file():
+    if os.path.exists(VERIFY_FILE_PATH):
+        with open(VERIFY_FILE_PATH, "r") as f:
+            st.markdown(f"<pre>{f.read()}</pre>", unsafe_allow_html=True)
+    else:
+        st.error("Verification file not found.")
+
+
 def send_otp_sms(mobile_number, otp):
     url = "https://www.fast2sms.com/dev/bulk"
     payload = {
