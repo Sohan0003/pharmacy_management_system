@@ -4,9 +4,6 @@ import random
 import requests
 from typing import Optional
 import os
-%%html
-<h2 style="color:green;">This is HTML</h2>
-<p>Written directly in the cell using the HTML magic command.</p>
 
 # --------------------
 # Configurations
