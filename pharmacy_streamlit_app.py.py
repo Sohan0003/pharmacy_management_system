@@ -4,6 +4,9 @@ import random
 import requests
 from typing import Optional
 import os
+from IPython.display import HTML
+
+HTML("<h1 style='color:blue;'>Hello, Jupyter!</h1>")
 
 # --------------------
 # Configurations
