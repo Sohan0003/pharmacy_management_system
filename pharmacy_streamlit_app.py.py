@@ -1,7 +1,6 @@
 import streamlit as st
 import sqlite3
 import random
-import requests
 from typing import Optional
 
 DB_PATH = "pharmacy.db"
@@ -11,7 +10,6 @@ def send_otp_local(mobile_number, otp):
     st.success(f"Your OTP is: {otp}")
     print(f"Generated OTP for {mobile_number}: {otp}")
     return {"return": True}
-
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -34,7 +32,7 @@ def init_db():
                     name TEXT NOT NULL,
                     quantity INTEGER NOT NULL,
                     price REAL NOT NULL,
-                    expiry_date TEXTNOT NULL
+                    expiry_date TEXT NOT NULL
                 )''')
     try:
         c.execute("INSERT OR IGNORE INTO users (username, password, role, mobile, first_name, middle_name, last_name, shop_name, city, state, pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -122,17 +120,16 @@ def login_page():
                     otp = str(random.randint(100000, 999999))
                     st.session_state.generated_otp = otp
 
-                    sms_response = send_otp_sms(mobile_num, otp)
+                    sms_response = send_otp_local(mobile_num, otp)  # Changed here
 
                     if "error" in sms_response:
                         st.error(f"Failed to send OTP: {sms_response['error']}")
                     elif sms_response.get("return") == True:
-                        st.success(f"OTP sent successfully to {mobile_num}. Please check your SMS. ")
+                        st.success(f"OTP generated for {mobile_num}. Please check the screen above.")
                     else:
-                        st.error(f"Failed to send OTP. Response: {sms_response}")
+                        st.error(f"Failed to generate OTP. Response: {sms_response}")
                 else:
                     st.error("Invalid mobile number or pincode.")
-
 
             if 'generated_otp' in st.session_state:
                 entered_otp = st.text_input("Enter OTP")
@@ -161,7 +158,6 @@ def login_page():
                         st.session_state.generated_otp = None
                     else:
                         st.error("User already exists!")
-
 
 # --------------------
 # Medicine CRUD + Billing
