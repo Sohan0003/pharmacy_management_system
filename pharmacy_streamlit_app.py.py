@@ -6,7 +6,6 @@ from typing import Optional
 DB_PATH = "pharmacy.db"
 
 def send_otp_local(mobile_number, otp):
-    # Display OTP on screen and console instead of sending via Fast2SMS
     st.success(f"Your OTP is: {otp}")
     print(f"Generated OTP for {mobile_number}: {otp}")
     return {"return": True}
@@ -14,6 +13,7 @@ def send_otp_local(mobile_number, otp):
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+
     c.execute('''CREATE TABLE IF NOT EXISTS users (
                     username TEXT PRIMARY KEY,
                     password TEXT,
@@ -27,6 +27,8 @@ def init_db():
                     state TEXT,
                     pincode TEXT
                 )''')
+
+    # Medicines table now linked to username
     c.execute('''CREATE TABLE IF NOT EXISTS medicines (
                     id TEXT,
                     username TEXT,
@@ -37,11 +39,13 @@ def init_db():
                     PRIMARY KEY (id, username),
                     FOREIGN KEY (username) REFERENCES users(username)
                 )''')
+
     try:
         c.execute("INSERT OR IGNORE INTO users (username, password, role, mobile, first_name, middle_name, last_name, shop_name, city, state, pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                   ("admin", "admin", "admin", "0000000000", "Admin", "", "User", "Admin Shop", "City", "State", "000000"))
     except Exception:
         pass
+
     conn.commit()
     conn.close()
 
@@ -122,7 +126,6 @@ def login_page():
                 if mobile_num.isdigit() and len(mobile_num) == 10 and is_valid_pincode(pincode):
                     otp = str(random.randint(100000, 999999))
                     st.session_state.generated_otp = otp
-
                     sms_response = send_otp_local(mobile_num, otp)
 
                     if "error" in sms_response:
@@ -177,7 +180,8 @@ def add_medicine_ui():
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         try:
-            c.execute("INSERT INTO medicines (id, username, name, quantity, expiry_date, price) VALUES (?, ?, ?, ?, ?, ?)",(med_id, st.session_state.username, name, int(qty), expiry.strftime(\"%Y-%m-%d\"), float(price)))
+            c.execute("INSERT INTO medicines (id, username, name, quantity, expiry_date, price) VALUES (?, ?, ?, ?, ?, ?)",
+                      (med_id, st.session_state.username, name, int(qty), expiry.strftime("%Y-%m-%d"), float(price)))
             conn.commit()
             st.success("Medicine added!")
         except sqlite3.IntegrityError:
@@ -189,8 +193,7 @@ def view_inventory_ui():
     st.header("📦 Inventory")
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("SELECT id, name, quantity, expiry_date, price FROM medicines WHERE username = ?")
-    c.execute_params = (st.session_state.username,)
+    c.execute("SELECT id, name, quantity, expiry_date, price FROM medicines WHERE username = ?", (st.session_state.username,))
     rows = c.fetchall()
     conn.close()
     if rows:
@@ -237,7 +240,8 @@ def update_stock_ui():
             return
 
         params.append(med_id)
-        sql = f"UPDATE medicines SET {', '.join(updates)} WHERE id = ?"
+        params.append(st.session_state.username)
+        sql = f"UPDATE medicines SET {', '.join(updates)} WHERE id = ? AND username = ?"
         c.execute(sql, tuple(params))
         conn.commit()
         conn.close()
@@ -295,7 +299,8 @@ def billing_ui():
             total_amount = 0
             for item in cart:
                 total_amount += item["total"]
-                c.execute("UPDATE medicines SET quantity = quantity - ? WHERE id = ? AND username = ?", (item["qty"], item["id"], st.session_state.username))
+                c.execute("UPDATE medicines SET quantity = quantity - ? WHERE id = ? AND username = ?",
+                          (item["qty"], item["id"], st.session_state.username))
             conn.commit()
             st.success(f"💰 Total Bill: ₹{total_amount:.2f}")
             import pandas as pd
@@ -398,8 +403,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
